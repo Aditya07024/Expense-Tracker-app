@@ -52,7 +52,7 @@ const CreateScreen = () => {
       const formattedAmount = Math.abs(parseFloat(amount));
 
       let source, category;
-      if (selectedCategory === "Income") {
+      if (selectedCategory === "income") {
         source = "income";
         category = "Income";
       } else {
@@ -242,10 +242,7 @@ const CreateScreen = () => {
           </>
         ) : (
           <>
-            <Text style={styles.sectionTitle}>
-              <Ionicons name="pricetag-outline" size={16} color={COLORS.text} />{" "}
-              Income Category
-            </Text>
+            
             <View style={styles.categoryGrid}>
               {CATEGORIES.filter((category) => category.name === "income").map(
                 (category) => (
