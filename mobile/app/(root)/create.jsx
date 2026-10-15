@@ -4,8 +4,8 @@ import {
   Alert,
   TouchableOpacity,
   TextInput,
-  ActivityIndicatorBase,
   ActivityIndicator,
+  Platform,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { useUser } from "@clerk/clerk-expo";
@@ -34,6 +34,14 @@ const CreateScreen = () => {
   const [selectedCategory, setSelectedCategory] = useState("");
   const [isExpense, setIsExpense] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
+
+  const handleBack = () => {
+    if (router.canGoBack()) {
+      router.back();
+    } else {
+      router.replace("/");
+    }
+  };
 
   const handleCreate = async () => {
     // validations
@@ -67,7 +75,7 @@ const CreateScreen = () => {
         },
         body: JSON.stringify({
           user_id: user.id,
-          title,
+          title: title.trim(),
           amount: formattedAmount,
           source,
           category,
@@ -77,13 +85,32 @@ const CreateScreen = () => {
       if (!response.ok) {
         const errorData = await response.json();
         console.log(errorData);
-        throw new Error(errorData.error || "Failed to create transaction");
+        throw new Error(errorData.error || errorData.message || "Failed to create transaction");
       }
 
-      Alert.alert("Success", "Transaction created successfully");
-      router.back();
+      // Reset form
+      setTitle("");
+      setAmount("");
+      setSelectedCategory("");
+
+      if (Platform.OS === "web") {
+        handleBack();
+      } else {
+        Alert.alert("Success", "Transaction created successfully", [
+          {
+            text: "OK",
+            onPress: handleBack,
+          },
+        ]);
+        handleBack();
+      }
     } catch (error) {
-      Alert.alert("Error", error.message || "Failed to create transaction");
+      const errorMsg = error.message || "Failed to create transaction";
+      if (Platform.OS === "web") {
+        alert(errorMsg);
+      } else {
+        Alert.alert("Error", errorMsg);
+      }
       console.error("Error creating transaction:", error);
     } finally {
       setIsLoading(false);
@@ -100,7 +127,9 @@ const CreateScreen = () => {
       <View style={styles.header}>
         <TouchableOpacity
           style={styles.backButton}
-          onPress={() => router.back()}
+          onPress={handleBack}
+          hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
+          activeOpacity={0.7}
         >
           <Ionicons name="arrow-back" size={24} color={COLORS.text} />
         </TouchableOpacity>
@@ -169,7 +198,7 @@ const CreateScreen = () => {
 
         {/* AMOUNT CONTAINER */}
         <View style={styles.amountContainer}>
-          <Text style={styles.currencySymbol}>$</Text>
+          <Text style={styles.currencySymbol}>₹</Text>
           <TextInput
             style={styles.amountInput}
             placeholder="0.00"

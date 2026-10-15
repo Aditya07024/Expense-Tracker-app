@@ -95,6 +95,12 @@ export default function SignUpScreen() {
         <TouchableOpacity onPress={onVerifyPress} style={styles.button}>
           <Text style={styles.buttonText}>Verify</Text>
         </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => setPendingVerification(false)}
+          style={{ marginTop: 15, alignItems: "center" }}
+        >
+          <Text style={styles.linkText}>Back to Sign Up</Text>
+        </TouchableOpacity>
       </View>
     );
   }

@@ -1,9 +1,8 @@
 // react custom hook file
 
 import { useCallback, useState } from "react";
-import { Alert } from "react-native";
+import { Alert, Platform } from "react-native";
 import { API_URL } from "../constants/api";
-
 
 export const useTransactions = (userId) => {
   const [transactions, setTransactions] = useState([]);
@@ -18,8 +17,9 @@ export const useTransactions = (userId) => {
   const fetchTransactions = useCallback(async () => {
     try {
       const response = await fetch(`${API_URL}/transactions/${userId}`);
+      if (!response.ok) throw new Error("Failed to fetch transactions");
       const data = await response.json();
-      setTransactions(data);
+      setTransactions(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error("Error fetching transactions:", error);
     }
@@ -28,8 +28,9 @@ export const useTransactions = (userId) => {
   const fetchSummary = useCallback(async () => {
     try {
       const response = await fetch(`${API_URL}/transactions/summary/${userId}`);
+      if (!response.ok) throw new Error("Failed to fetch summary");
       const data = await response.json();
-      setSummary(data);
+      setSummary(data || { balance: 0, income: 0, expenses: 0 });
     } catch (error) {
       console.error("Error fetching summary:", error);
     }
@@ -38,7 +39,6 @@ export const useTransactions = (userId) => {
   const loadData = useCallback(async () => {
     if (!userId) return;
 
-    setIsLoading(true);
     try {
       // can be run in parallel
       await Promise.all([fetchTransactions(), fetchSummary()]);
@@ -50,16 +50,26 @@ export const useTransactions = (userId) => {
   }, [fetchTransactions, fetchSummary, userId]);
 
   const deleteTransaction = async (id) => {
+    // 1. Instant optimistic update: remove transaction from list immediately
+    const prevTransactions = transactions;
+    setTransactions((prev) => prev.filter((item) => item.id !== id));
+
     try {
       const response = await fetch(`${API_URL}/transactions/${id}`, { method: "DELETE" });
       if (!response.ok) throw new Error("Failed to delete transaction");
 
-      // Refresh data after deletion
-      loadData();
-      Alert.alert("Success", "Transaction deleted successfully");
+      // 2. Fetch updated summary and transactions in background
+      await loadData();
     } catch (error) {
+      // Rollback on failure
+      setTransactions(prevTransactions);
       console.error("Error deleting transaction:", error);
-      Alert.alert("Error", error.message);
+      const errorMsg = error.message || "Failed to delete transaction";
+      if (Platform.OS === "web") {
+        alert(errorMsg);
+      } else {
+        Alert.alert("Error", errorMsg);
+      }
     }
   };
 

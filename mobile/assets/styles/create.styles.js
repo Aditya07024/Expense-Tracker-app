@@ -21,7 +21,10 @@ export const styles = StyleSheet.create({
     color: COLORS.text,
   },
   backButton: {
-    padding: 5,
+    padding: 8,
+    borderRadius: 8,
+    alignItems: "center",
+    justifyContent: "center",
   },
   saveButtonContainer: {
     flexDirection: "row",
