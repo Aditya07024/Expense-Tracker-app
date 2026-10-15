@@ -33,15 +33,20 @@ This isn't just a front-end app — it's a **complete mobile application** with 
 PORT=5001
 NODE_ENV=development
 
-CLERK_PUBLISHABLE_KEY=<your_clerk_publishable_key>
-CLERK_SECRET_KEY=<your_clerk_secret_key>
-
 DATABASE_URL=<your_neon_postgres_connection_url>
 
-REDIS_URL=<your_redis_connection_url>
+# Upstash Redis (required by backend/src/config/upstash.js)
+UPSTASH_REDIS_REST_URL=<your_upstash_redis_rest_url>
+UPSTASH_REDIS_REST_TOKEN=<your_upstash_redis_rest_token>
+
+# Cron Keep-Alive ping (used in production)
+API_URL=http://localhost:5001/api/health
+
+CLERK_PUBLISHABLE_KEY=<your_clerk_publishable_key>
+CLERK_SECRET_KEY=<your_clerk_secret_key>
 ```
 
-### ⚙️ Backend (`/backend`)
+### 📱 Mobile (`/mobile`)
 
 ```bash
 EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY=<your_clerk_key>
